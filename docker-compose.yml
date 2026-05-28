@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+
+  nginx:
+    build: ./nginx
+    container_name: nginx
+
+    ports:
+      - "8080:80"
+
+    volumes:
+      - ./logs:/var/log/nginx
+
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    build: ./elasticsearch
+    container_name: elasticsearch
+
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    
+    ports:
+      - "9200:9200"
+
+  kibana:
+    build: ./kibana
+    container_name: kibana
+
+    ports:
+      - "5601:5601"
+
+    depends_on:
+      - elasticsearch
+
+  filebeat:
+    build: ./filebeat
+    container_name: filebeat
+
+    user: root
+
+    volumes:
+      - ./logs:/var/log/nginx
+
+    depends_on:
+      - elasticsearch
+      - nginx
